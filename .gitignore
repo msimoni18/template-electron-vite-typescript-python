@@ -90,3 +90,12 @@ typings/
 
 # Electron-Forge
 out/
+
+# Python
+__pycache__/
+venv/
+
+# Pyinstaller
+build/
+resources/
+*.spec
