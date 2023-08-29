@@ -39,4 +39,4 @@ Start the application using:
 
 Build the application using:
 
-```npm run build:all```
+```npm run build```
