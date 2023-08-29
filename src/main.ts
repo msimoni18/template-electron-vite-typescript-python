@@ -71,24 +71,22 @@ app.whenReady().then(() => {
     });
   }
 
+  ipcMain.handle('ping', () => 'pong');
+
   // Delay window creation because the flask
   // server takes longer to start than the
   // browser window. If the browser window
   // starts before the flask server, fetch
   // errors occur.
   setTimeout(() => {
-    createWindow();
-  }, 5000);
-
-  ipcMain.handle('ping', () => 'pong');
-
-  app.on('activate', () => {
-    // On OS X it's common to re-create a window in the app when the
-    // dock icon is clicked and there are no other windows open.
-    if (BrowserWindow.getAllWindows().length === 0) {
-      createWindow();
-    }
-  });
+    app.on('activate', () => {
+      // On OS X it's common to re-create a window in the app when the
+      // dock icon is clicked and there are no other windows open.
+      if (BrowserWindow.getAllWindows().length === 0) {
+        createWindow();
+      }
+    });
+  }, 3000);
 });
 
 /**
