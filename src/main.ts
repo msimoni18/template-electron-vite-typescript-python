@@ -1,5 +1,7 @@
-import { app, BrowserWindow } from 'electron';
+import { app, BrowserWindow, ipcMain } from 'electron';
 import path from 'path';
+import { spawn } from 'child_process';
+import get from 'axios';
 
 // Handle creating/removing shortcuts on Windows when installing/uninstalling.
 if (require('electron-squirrel-startup')) {
@@ -20,7 +22,9 @@ const createWindow = () => {
   if (MAIN_WINDOW_VITE_DEV_SERVER_URL) {
     mainWindow.loadURL(MAIN_WINDOW_VITE_DEV_SERVER_URL);
   } else {
-    mainWindow.loadFile(path.join(__dirname, `../renderer/${MAIN_WINDOW_VITE_NAME}/index.html`));
+    mainWindow.loadFile(
+      path.join(__dirname, `../renderer/${MAIN_WINDOW_VITE_NAME}/index.html`),
+    );
   }
 
   // Open the DevTools.
@@ -30,22 +34,75 @@ const createWindow = () => {
 // This method will be called when Electron has finished
 // initialization and is ready to create browser windows.
 // Some APIs can only be used after this event occurs.
-app.on('ready', createWindow);
+app.whenReady().then(() => {
+  const port = 5050;
+
+  // Start the flask server in development or production
+  if (MAIN_WINDOW_VITE_DEV_SERVER_URL) {
+    spawn(`flask run --port ${port}`, {
+      detached: true,
+      shell: true,
+      stdio: 'inherit',
+    });
+  } else {
+    const runFlask = {
+      darwin: `open -gj "${path.join(
+        app.getAppPath(),
+        'resources',
+        'app',
+        'app',
+      )}" --args`,
+      linux: './resources/app/app',
+      win32: 'start ./resources/app/app.exe',
+      aix: undefined,
+      android: undefined,
+      cygwin: undefined,
+      freebsd: undefined,
+      haiku: undefined,
+      netbsd: undefined,
+      openbsd: undefined,
+      sunos: undefined,
+    }[process.platform];
+
+    spawn(`${runFlask} ${port}`, {
+      detached: false,
+      shell: true,
+      stdio: 'pipe',
+    });
+  }
+
+  ipcMain.handle('ping', () => 'pong');
+
+  // Delay window creation because the flask
+  // server takes longer to start than the
+  // browser window. If the browser window
+  // starts before the flask server, fetch
+  // errors occur.
+  setTimeout(() => {
+    app.on('activate', () => {
+      // On OS X it's common to re-create a window in the app when the
+      // dock icon is clicked and there are no other windows open.
+      if (BrowserWindow.getAllWindows().length === 0) {
+        createWindow();
+      }
+    });
+  }, 3000);
+});
+
+/**
+ * @description - Shuts down Electron & Flask.
+ * @param {number} port - Port that Flask server is running on.
+ */
+const shutdown = (port: number) => {
+  get(`http://localhost:${port}/quit`).then(app.quit).catch(app.quit);
+};
 
 // Quit when all windows are closed, except on macOS. There, it's common
 // for applications and their menu bar to stay active until the user quits
 // explicitly with Cmd + Q.
 app.on('window-all-closed', () => {
   if (process.platform !== 'darwin') {
-    app.quit();
-  }
-});
-
-app.on('activate', () => {
-  // On OS X it's common to re-create a window in the app when the
-  // dock icon is clicked and there are no other windows open.
-  if (BrowserWindow.getAllWindows().length === 0) {
-    createWindow();
+    shutdown(5050);
   }
 });
 
