@@ -11,9 +11,10 @@
     "outDir": "dist",
     "moduleResolution": "node",
     "resolveJsonModule": true,
-    "jsx": "react-jsx"
-    // "allowImportingTsExtensions": true,
-    // "noEmit": true,
+    "jsx": "react-jsx",
+    "noUnusedLocals": true,
+    "noUnusedParameters": true,
+    "noFallthroughCasesInSwitch": true
   },
-  "include": ["src"]
+  "include": ["src/**/*"]
 }

@@ -8,7 +8,7 @@ import { VitePlugin } from '@electron-forge/plugin-vite';
 const config: ForgeConfig = {
   packagerConfig: {
     name: 'App',
-    extraResource: ['./resources'],
+    extraResource: ['./resources'], // include the pyinstaller executable
     overwrite: true,
   },
   rebuildConfig: {},

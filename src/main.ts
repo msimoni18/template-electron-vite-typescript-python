@@ -1,7 +1,6 @@
 import { app, BrowserWindow, ipcMain } from 'electron';
 import path from 'path';
 import { spawn } from 'child_process';
-import fs from 'fs';
 import get from 'axios';
 
 // Handle creating/removing shortcuts on Windows when installing/uninstalling.
@@ -36,13 +35,11 @@ const createWindow = () => {
 // initialization and is ready to create browser windows.
 // Some APIs can only be used after this event occurs.
 app.whenReady().then(() => {
-  createWindow();
-
   const port = 5050;
 
   // Start the flask server in development or production
   if (MAIN_WINDOW_VITE_DEV_SERVER_URL) {
-    spawn(`python app.py ${port}`, {
+    spawn(`flask run --port ${port}`, {
       detached: true,
       shell: true,
       stdio: 'inherit',
@@ -50,7 +47,6 @@ app.whenReady().then(() => {
   } else {
     const runFlask = {
       darwin: `open -gj "${path.join(
-        // process.resourcesPath,
         app.getAppPath(),
         'resources',
         'app',
@@ -75,13 +71,16 @@ app.whenReady().then(() => {
     });
   }
 
-  ipcMain.handle('ping', () => ({
-    getAppPath: app.getAppPath(),
-    resourcesPath: process.resourcesPath,
-    getAppPathFiles: fs.readdirSync(app.getAppPath()),
-    resourcesPathFiles: fs.readdirSync(process.resourcesPath),
-    resourcesFiles: fs.readdirSync(`${process.resourcesPath}/resources/app`),
-  }));
+  // Delay window creation because the flask
+  // server takes longer to start than the
+  // browser window. If the browser window
+  // starts before the flask server, fetch
+  // errors occur.
+  setTimeout(() => {
+    createWindow();
+  }, 5000);
+
+  ipcMain.handle('ping', () => 'pong');
 
   app.on('activate', () => {
     // On OS X it's common to re-create a window in the app when the
