@@ -7,7 +7,7 @@ function buildPython() {
   // const icon = './public/favicon.ico';
 
   const options = [
-    // '--noconsole', // No shell
+    '--noconsole', // No shell
     '--noconfirm', // Don't confirm overwrite
     '--distpath ./resources', // Dist (out) path
     // `--icon ${icon}`, // Icon to use
@@ -21,7 +21,7 @@ function buildPython() {
 }
 
 function buildElectron() {
-  console.log('Creating Electron build...')
+  console.log('Creating Electron build...');
   spawnSync('electron-forge make', {
     detached: false,
     shell: true,
