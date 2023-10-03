@@ -1,42 +1,34 @@
-import { useState, useEffect } from 'react';
+import React from 'react';
+import Titlebar from './components/Titlebar/Titlebar';
+import { ModeToggle } from './components/ToggleMode';
 import { get } from './utilities/requests';
-import reactLogo from './assets/react.svg';
-import viteLogo from './assets/vite.svg';
 import './App.css';
 
 export default function App() {
-  const [count, setCount] = useState(0);
+  const [res, setRes] = React.useState('');
 
-  useEffect(() => {
+  React.useEffect(() => {
     get(
-      '/example',
-      (response) => alert(response),
+      'example',
+      (response: { message: string }) => setRes(response.message),
       (error) => console.error(error),
     );
   }, []);
 
   return (
-    <>
-      <div>
-        <a href="https://vitejs.dev" target="_blank">
-          <img src={viteLogo} className="logo" alt="Vite logo" />
-        </a>
-        <a href="https://react.dev" target="_blank">
-          <img src={reactLogo} className="logo react" alt="React logo" />
-        </a>
+    <div className="h-screen">
+      <Titlebar />
+      <div className="text-center flex flex-col gap-4 justify-center h-full text-zinc-900 dark:bg-zinc-900 dark:text-zinc-200">
+        <h1 className="text-3xl">
+          Template for building Electron apps with typscript+react, python, and
+          tailwindcss.
+        </h1>
+        <p>v{import.meta.env.VITE_APP_VERSION}</p>
+        <p>Message from /example route: {res}</p>
+        <div>
+          <ModeToggle />
+        </div>
       </div>
-      <h1>Vite + React</h1>
-      <div className="card">
-        <button onClick={() => setCount((count) => count + 1)}>
-          count is {count}
-        </button>
-        <p>
-          Edit <code>src/App.tsx</code> and save to test HMR
-        </p>
-      </div>
-      <p className="read-the-docs">
-        Click on the Vite and React logos to learn more
-      </p>
-    </>
+    </div>
   );
 }
